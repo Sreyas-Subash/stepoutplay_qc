@@ -1,0 +1,8 @@
+INFO:root:
+
+Foul to fk-pk QC done
+
+****************************************************************************************************
+ERROR:ipykernel.comm:No such comm target registered: jupyter.widget.control
+WARNING:Comm:No such comm: 38ffaef6-580e-445d-8b4e-57f30a004392
+DEBUG:Comm:Current comms: []
