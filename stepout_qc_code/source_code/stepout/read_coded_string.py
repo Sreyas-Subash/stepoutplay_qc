@@ -11,9 +11,8 @@ os.chdir(parent_dir)
 
 class Read():
 
-    def __int__(self):
-        self.read_path = r"read_string\rstring.docx"
-        self.doc_obj = docx.Document(self.read_path)
+    read_path = r"read_string\rstring.docx"
+    doc_obj = docx.Document(read_path)
 
     def read(self):
         """
@@ -21,12 +20,22 @@ class Read():
        """
 
         try:
+            # checking for next line character
             if len(self.doc_obj.paragraphs) > 1:
                 print(f"At this action {self.doc_obj.paragraphs[1].text.split(',')[0]}, there is an issue. Please Check!")
+                print('Terminating Program...')
                 sys.exit(0)
             else:
                 for paragraph in self.doc_obj.paragraphs:
                     coded_string = paragraph.text
+                    coded_string_space_sep = coded_string.split(' ')
+
+                    # checking for space
+                    if len(coded_string_space_sep) > 1:
+                        print(f"At this action {coded_string_space_sep[1].split(',')[0]}, there is an issue. Please Check!")
+                        print('Terminating Program...')
+                        sys.exit(0)
+
                     coded_string_list = coded_string.split(',')
                     df = pd.DataFrame(coded_string_list, columns=['strings'])
                     df[['team', 'jersey_number', 'action', 'notation', 'start_grid', 'end_grid', 'timestamp', 'foot',
@@ -40,10 +49,8 @@ class Read():
             print(f"An error occurred: {str(e)}")
             traceback.print_exc()
 
+if __name__ == "__main__":
+    read_obj = Read()
+    df = read_obj.read()
 
-
-
-read_obj = Read()
-df = read_obj.read()
-
-print(df.head().to_string())
+    print(df.head().to_string())
