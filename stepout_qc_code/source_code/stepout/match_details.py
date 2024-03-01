@@ -6,6 +6,7 @@ import pandas as pd
 from analyst_details import AnalystDetails
 from openpyxl import load_workbook, Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
+from package_necessity import star_count
 
 src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 parent_dir = os.path.abspath(os.path.join(src_dir, os.pardir))
@@ -121,9 +122,9 @@ class MatchDetails:
 
         self.match_renum_excel(write_path_xlsx, self.data)
 
-        print("*"*50)
+        print("*" * star_count)
         print("Match details added")
-        print("*"*50)
+        print("*" * star_count)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1 @@
+star_count = 100
