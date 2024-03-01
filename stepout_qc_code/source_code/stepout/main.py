@@ -1,11 +1,16 @@
 import os
 from read_coded_string import Read
+from analyst_details import AnalystDetails
+from match_details import MatchDetails
+from stepout.qc_functions import QualityChecks
 
 src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 parent_dir = os.path.abspath(os.path.join(src_dir, os.pardir))
 os.chdir(parent_dir)
 
 if __name__ == "__main__":
+    match_id = int(input('Match ID please... = '))
+
     # ============================================== Read coded string: ============================================== #
     read_obj = Read()
     df = read_obj.read()
@@ -14,6 +19,20 @@ if __name__ == "__main__":
     initial_input = input('Do you wish to add match details? (y/n)')
 
     if initial_input.lower() == 'y':
-        pass
+        analyst_obj = AnalystDetails()
+        analyst_names = analyst_obj.analyst_names
+
+        match_obj = MatchDetails(analyst_names, match_id)
+        match_obj.calling_func()
     else:
         print("Proceeding without filling match details")
+
+    # ============================================== Quality checks: ============================================== #
+    initial_input = input('Do you wish run QC for this match? (y/n)')
+
+    if initial_input.lower() == 'y':
+        qc_obj = QualityChecks(df, match_id)
+        qc_obj.calling_func()
+
+    else:
+        print("Proceeding without running QC")

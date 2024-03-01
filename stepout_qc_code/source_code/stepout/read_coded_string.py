@@ -1,3 +1,5 @@
+# pip install python-docx
+
 import sys
 import traceback
 import docx
@@ -53,4 +55,4 @@ if __name__ == "__main__":
     read_obj = Read()
     df = read_obj.read()
 
-    print(df.head().to_string())
+    # print(df.head().to_string())
