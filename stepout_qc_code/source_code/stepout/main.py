@@ -28,7 +28,7 @@ if __name__ == "__main__":
         print("Proceeding without filling match details")
 
     # ============================================== Quality checks: ============================================== #
-    initial_input = input('Do you wish run QC for this match? (y/n)')
+    initial_input = input('Do you wish to run QC for this match? (y/n)')
 
     if initial_input.lower() == 'y':
         qc_obj = QualityChecks(df, match_id)

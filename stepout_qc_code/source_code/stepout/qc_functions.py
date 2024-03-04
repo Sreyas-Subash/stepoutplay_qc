@@ -82,7 +82,6 @@ class QualityChecks:
         mask = ~(self.df['action'].isin(['ST', 'SL', 'AD', 'GD', 'HB'])) & (self.df['special_attribute'].isin(['F', 'YC', 'RC']))
         non_df_action = self.df[mask]
         non_df_action_count = non_df_action['action'].count()
-
         if (non_df_action_count != 0):
             message = 'A non defensive action was tagged as a foul. Please check!'
             self.display_output(non_df_action, message, 30, 'non_df_action_foul')
@@ -97,7 +96,6 @@ class QualityChecks:
                (self.df['special_attribute'].isin(['F', 'YC', 'RC']))
         successful_df_action = self.df[mask]
         successful_df_action_foul = successful_df_action['action'].count()
-
         if (successful_df_action_foul != 0):
             message = 'A successful defensive action was tagged as a foul. Please check!'
             self.display_output(successful_df_action, message, 30, 'successful_df_action_foul')
@@ -157,13 +155,125 @@ class QualityChecks:
             message = 'GK QC-2\nThis GH or GT taken outside penalty area. Please check!'
             self.display_output(wrong_goalkeeper, message, 30, 'GK QC-2')
 
+    def penalty_qc(self):
+        """
+        This function checks if PK is taken from the appropriate grid location(32, 42)
+        :return: None
+        """
+        mask = (self.df['special_attribute'] == 'PK') & ~(self.df['start_grid'].isin(['32', '42']))
+        wrong_pk = self.df[mask]
+        wrong_pk_count = wrong_pk['action'].count()
+        if wrong_pk_count > 0:
+            message = 'This penalty kick is taken outside the penalty area(32, 42). Please check!'
+            self.display_output(wrong_pk, message, 30, 'Penalty_check')
+
+    def unsuccessful_interception(self):
+        """
+        This function checks if
+        There are any unsuccessful interceptions(IN-0).
+        :return: None
+        """
+        mask = (self.df['action'].isin(['IN', 'XIN'])) & (self.df['notation'] == '0')
+        unsuccessful_interception = self.df[mask]
+        unsuccessful_interception_count = unsuccessful_interception['action'].count()
+        if (unsuccessful_interception_count != 0):
+            message = 'An unsuccessful interception was tagged. Please check!'
+            self.display_output(unsuccessful_interception, message, 30, 'unsuccessful_interception_check')
+
+    def misbehaviour_foul_count(self):
+        """
+        This function finds the misbehaviour foul counts
+        :return: None
+        """
+        misbehaviour_foul_a = 0
+        misbehaviour_foul_b = 0
+
+        mask_1 = (self.df['action'] == 'ST') & (self.df['notation'] == '0') & (self.df['special_attribute'].isin(['YC', 'RC']))
+        misbehaviour_foul_index_list = self.df[mask_1].index
+
+        for index in misbehaviour_foul_index_list:
+            mask_2 = (index == self.df.index[-1]) or (self.df.loc[index + 1, 'action'] != 'XST')
+            if (mask_2) & (self.df.loc[index, 'team'] == 'A'):
+                misbehaviour_foul_a += 1
+            elif (mask_2) & (self.df.loc[index, 'team'] == 'B'):
+                misbehaviour_foul_b += 1
+
+        return misbehaviour_foul_a, misbehaviour_foul_b
+
+    def fk_pk_foul_count(self):
+        """
+        finding fk-pk and fouls count
+        :return: None
+        """
+        misbehaviour_foul_a, misbehaviour_foul_b = self.misbehaviour_foul_count()
+        foul_type = (self.df['action'].isin(['HB', 'OFF'])) | (self.df['special_attribute'].isin(['F', 'YC', 'RC']))
+        fk_pk = self.df['special_attribute'].isin(['FK', 'PK'])
+
+        teamb_foul = self.df[(self.df['team'] == 'B') & (foul_type)]['action'].count()
+        teamb_foul = teamb_foul - misbehaviour_foul_b
+        teamb_fk_pk = self.df[(self.df['team'] == 'B') & (fk_pk)]['action'].count()
+
+        teama_foul = self.df[(self.df['team'] == 'A') & (foul_type)]['action'].count()
+        teama_foul = teama_foul - misbehaviour_foul_a
+        teama_fk_pk = self.df[(self.df['team'] == 'A') & (fk_pk)]['action'].count()
+
+        return teama_foul, teama_fk_pk, teamb_foul, teamb_fk_pk
+
+    def fk_pk_foul_output(self, foul_team, fk_pk_team):
+        foul_mask = ((self.df['team'].isin(foul_team)) & \
+                     ((self.df['action'].isin(['HB', 'OFF'])) | \
+                      (self.df['special_attribute'].isin(['F', 'YC', 'RC']))))
+        fk_mask = ((self.df['team'].isin(fk_pk_team)) & (self.df['special_attribute'].isin(['FK', 'PK'])))
+        # print(self.df[foul_mask | fk_mask].to_string())
+        fk_pk_foul_df = self.df[foul_mask | fk_mask].copy()
+        error_index_list = []
+        for idx in fk_pk_foul_df.index:
+            while idx in self.df[foul_mask].index:
+                stop_loop = True
+                break
+            if stop_loop:
+                break
+            error_index_list.append(idx)
+        print('error',error_index_list)
+        fk_pk_foul_df.drop(error_index_list, inplace=True)
+
+
+    def fk_pk_foul_check(self):
+        """
+        This function finds the misbehaviour foul counts, subtracts them from total fouls and checks if total fouls equal
+        total freekick-penalty
+        :return: None
+        """
+        teama_foul, teama_fk_pk, teamb_foul, teamb_fk_pk = self.fk_pk_foul_count()
+
+        # verifying if the foul and fk-pk count match
+        if (teamb_foul == teama_fk_pk) & (teama_foul == teamb_fk_pk):
+            pass
+        else:
+            teamB = (teamb_foul == teama_fk_pk)
+            teamA = (teama_foul == teamb_fk_pk)
+            if not (teamB | teamA):
+                foul_team = ['A', 'B']
+                fk_pk_team = ['A', 'B']
+            elif teamB:
+                foul_team = ['A']
+                fk_pk_team = ['B']
+            else:
+                foul_team = ['B']
+                fk_pk_team = ['A']
+
+            self.fk_pk_foul_output(foul_team, fk_pk_team)
+
     def calling_func(self):
-        self.non_def_foul()
-        self.successful_def()
-        self.corner_qc_1()
-        self.corner_qc_2()
-        self.gk_qc_1()
-        self.gk_qc_2()
+        # self.non_def_foul()
+        # self.successful_def()
+        # self.corner_qc_1()
+        # self.corner_qc_2()
+        # self.gk_qc_1()
+        # self.gk_qc_2()
+        # self.penalty_qc()
+        # self.unsuccessful_interception()
+        self.fk_pk_foul_check()
 
 
 # if __name__ == "__main__":

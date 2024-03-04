@@ -1,3 +1,9 @@
+# to-do
+# spreadsheet api integration
+# stepout api endpoints integration
+# option to run a one or multiple filess
+
+
 import sys
 import traceback
 import docx
