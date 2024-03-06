@@ -126,6 +126,7 @@ class MatchDetails:
         print("Match details added")
         print("*" * star_count)
 
+        return self.data
 
 if __name__ == "__main__":
     analyst_obj = AnalystDetails()

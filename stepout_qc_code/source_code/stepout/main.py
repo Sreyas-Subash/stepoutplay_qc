@@ -4,6 +4,7 @@ from analyst_details import AnalystDetails
 from match_details import MatchDetails
 from stepout.qc_functions import QualityChecks
 from df_to_coded_string import Write
+from match_report import MatchReport
 
 src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 parent_dir = os.path.abspath(os.path.join(src_dir, os.pardir))
@@ -24,7 +25,14 @@ if __name__ == "__main__":
         analyst_names = analyst_obj.analyst_names
 
         match_obj = MatchDetails(analyst_names, match_id)
-        match_obj.calling_func()
+        data = match_obj.calling_func()
+
+        initial_input = input('Do you wish to create match report? (y/n)')
+        if initial_input.lower() == 'y':
+            match_report_obj = MatchReport(data, df)
+            match_report_obj.calling_func()
+        else:
+            print("Proceeding without creating match report")
     else:
         print("Proceeding without filling match details")
 
