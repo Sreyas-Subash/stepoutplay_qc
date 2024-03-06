@@ -66,12 +66,15 @@ class QualityChecks:
 
         wb.save(self.qc_path_xlsx)
 
-    def display_output(self, output_df, message, cell_size, sheet_name):
-        print('*' * star_count)
-        print(message)
-        print(output_df.to_string())
-        print('*' * star_count)
-        self.qc_excel_log(output_df, message, cell_size, sheet_name)
+    def display_output(self, output_df, message, cell_size, sheet_name, wrong_data_count = 1):
+        if wrong_data_count != 0:
+            print('*' * star_count)
+            print(message)
+            print(output_df.to_string())
+            print('*' * star_count)
+            self.qc_excel_log(output_df, message, cell_size, sheet_name)
+        else:
+            print(f'###{sheet_name} qc done###')
 
     def non_def_foul(self):
         """
@@ -82,9 +85,8 @@ class QualityChecks:
         mask = ~(self.df['action'].isin(['ST', 'SL', 'AD', 'GD', 'HB'])) & (self.df['special_attribute'].isin(['F', 'YC', 'RC']))
         non_df_action = self.df[mask]
         non_df_action_count = non_df_action['action'].count()
-        if (non_df_action_count != 0):
-            message = 'A non defensive action was tagged as a foul. Please check!'
-            self.display_output(non_df_action, message, 30, 'non_df_action_foul')
+        message = 'A non defensive action was tagged as a foul. Please check!'
+        self.display_output(non_df_action, message, 30, 'non_df_action_foul', non_df_action_count)
 
     def successful_def(self):
         """
@@ -95,10 +97,9 @@ class QualityChecks:
         mask = (self.df['action'].isin(['ST', 'SL', 'AD', 'GD']))  & (self.df['notation'] == '1') & \
                (self.df['special_attribute'].isin(['F', 'YC', 'RC']))
         successful_df_action = self.df[mask]
-        successful_df_action_foul = successful_df_action['action'].count()
-        if (successful_df_action_foul != 0):
-            message = 'A successful defensive action was tagged as a foul. Please check!'
-            self.display_output(successful_df_action, message, 30, 'successful_df_action_foul')
+        successful_df_action_foul_count = successful_df_action['action'].count()
+        message = 'A successful defensive action was tagged as a foul. Please check!'
+        self.display_output(successful_df_action, message, 30, 'successful_df_action_foul', successful_df_action_foul_count)
 
     def corner_qc_1(self):
         """
@@ -109,9 +110,8 @@ class QualityChecks:
         mask = (self.df['special_attribute'] == 'CN') & ~(self.df['start_grid'].isin(['01', '1', '71']))
         false_cn = self.df[mask]
         false_cn_count = false_cn['action'].count()
-        if false_cn_count != 0:
-            message = 'This Corner started from a false start grid(not starting from [1, 01, 71]). Please check!'
-            self.display_output(false_cn, message, 30, 'corner_grid_check')
+        message = 'This Corner started from a false start grid(not starting from [1, 01, 71]). Please check!'
+        self.display_output(false_cn, message, 40, 'corner_grid_check', false_cn_count)
 
     def corner_qc_2(self):
         """
@@ -124,9 +124,8 @@ class QualityChecks:
                & (self.df['action'] == 'C')
         corner_in_cross = self.df[mask]
         corner_in_cross_count = corner_in_cross['action'].count()
-        if corner_in_cross_count != 0:
-            message = f'{corner_in_cross_count} cross found with corner grid. Check if they are corners'
-            self.display_output(corner_in_cross, message, 30, 'cross_check')
+        message = f'{corner_in_cross_count} cross found with corner grid. Check if they are corners'
+        self.display_output(corner_in_cross, message, 30, 'cross_check', corner_in_cross_count)
 
     def gk_qc_1(self):
         """
@@ -137,9 +136,8 @@ class QualityChecks:
         mask = (self.df['special_attribute'] == 'GK') & ~(self.df['start_grid'].isin(['40', '50']))
         wrong_goalkick = self.df[mask]
         wrong_goalkick_count = wrong_goalkick['action'].count()
-        if wrong_goalkick_count > 0:
-            message = 'GK QC-1\nThis goal kick is taken outside the goal area. Please check!'
-            self.display_output(wrong_goalkick, message, 30, 'GK QC-1')
+        message = 'GK QC-1\nThis goal kick is taken outside the goal area. Please check!'
+        self.display_output(wrong_goalkick, message, 30, 'GK QC-1', wrong_goalkick_count)
 
     def gk_qc_2(self):
         """
@@ -151,9 +149,8 @@ class QualityChecks:
         mask = (self.df['action'].isin(['GH', 'GT'])) & ~(self.df['start_grid'].isin(gk_d_grids))
         wrong_goalkeeper = self.df[mask]
         wrong_goalkeeper_count = wrong_goalkeeper['action'].count()
-        if wrong_goalkeeper_count > 0:
-            message = 'GK QC-2\nThis GH or GT taken outside penalty area. Please check!'
-            self.display_output(wrong_goalkeeper, message, 30, 'GK QC-2')
+        message = 'GK QC-2\nThis GH or GT taken outside penalty area. Please check!'
+        self.display_output(wrong_goalkeeper, message, 30, 'GK QC-2', wrong_goalkeeper_count)
 
     def penalty_qc(self):
         """
@@ -163,9 +160,8 @@ class QualityChecks:
         mask = (self.df['special_attribute'] == 'PK') & ~(self.df['start_grid'].isin(['32', '42']))
         wrong_pk = self.df[mask]
         wrong_pk_count = wrong_pk['action'].count()
-        if wrong_pk_count > 0:
-            message = 'This penalty kick is taken outside the penalty area(32, 42). Please check!'
-            self.display_output(wrong_pk, message, 30, 'Penalty_check')
+        message = 'This penalty kick is taken outside the penalty area(32, 42). Please check!'
+        self.display_output(wrong_pk, message, 30, 'Penalty_check', wrong_pk_count)
 
     def unsuccessful_interception(self):
         """
@@ -176,22 +172,25 @@ class QualityChecks:
         mask = (self.df['action'].isin(['IN', 'XIN'])) & (self.df['notation'] == '0')
         unsuccessful_interception = self.df[mask]
         unsuccessful_interception_count = unsuccessful_interception['action'].count()
-        if (unsuccessful_interception_count != 0):
-            message = 'An unsuccessful interception was tagged. Please check!'
-            self.display_output(unsuccessful_interception, message, 30, 'unsuccessful_interception_check')
+        message = 'An unsuccessful interception was tagged. Please check!'
+        self.display_output(unsuccessful_interception, message, 30, 'unsuccessful_interception_check', unsuccessful_interception_count)
 
     def misbehaviour_foul_count(self):
         """
         This function finds the misbehaviour foul counts
-        :return: None
+        :return:
+        misbehaviour_foul_a : int -> misbehaviour foul count for team A
+        misbehaviour_foul_b : int -> misbehaviour foul count for team B
         """
         misbehaviour_foul_a = 0
         misbehaviour_foul_b = 0
-
+        # misbehaviour foul standard notation ST-0 with YC or RC
         mask_1 = (self.df['action'] == 'ST') & (self.df['notation'] == '0') & (self.df['special_attribute'].isin(['YC', 'RC']))
         misbehaviour_foul_index_list = self.df[mask_1].index
 
         for index in misbehaviour_foul_index_list:
+            # misbehaviour foul standard notation will not have XST
+            # df.index[-1] to make sure index does not run out of range
             mask_2 = (index == self.df.index[-1]) or (self.df.loc[index + 1, 'action'] != 'XST')
             if (mask_2) & (self.df.loc[index, 'team'] == 'A'):
                 misbehaviour_foul_a += 1
@@ -203,7 +202,11 @@ class QualityChecks:
     def fk_pk_foul_count(self):
         """
         finding fk-pk and fouls count
-        :return: None
+        :return:
+        teama_foul : int -> team A foul total count after misbehaviour foul count is subtracted
+        teama_fk_pk : int -> team A fk-pk total count
+        teamb_foul : int -> team B foul total count after misbehaviour foul count is subtracted
+        teamb_fk_pk : int -> team B fk-pk total count
         """
         misbehaviour_foul_a, misbehaviour_foul_b = self.misbehaviour_foul_count()
         foul_type = (self.df['action'].isin(['HB', 'OFF'])) | (self.df['special_attribute'].isin(['F', 'YC', 'RC']))
@@ -219,24 +222,42 @@ class QualityChecks:
 
         return teama_foul, teama_fk_pk, teamb_foul, teamb_fk_pk
 
-    def fk_pk_foul_output(self, foul_team, fk_pk_team):
+    def fk_pk_foul_output_df(self, foul_team, fk_pk_team):
+        """
+        finding the fk-pk or foul without their respective pairs
+        :param foul_team: List[str] -> team(s) with wrong fouls
+        :param fk_pk_team: List[str] -> team(s) with wrong fk-pk
+        :return: self.df.iloc[error_list]: pd.DataFrame -> output dataframe with errors
+        """
         foul_mask = ((self.df['team'].isin(foul_team)) & \
                      ((self.df['action'].isin(['HB', 'OFF'])) | \
                       (self.df['special_attribute'].isin(['F', 'YC', 'RC']))))
         fk_mask = ((self.df['team'].isin(fk_pk_team)) & (self.df['special_attribute'].isin(['FK', 'PK'])))
-        # print(self.df[foul_mask | fk_mask].to_string())
         fk_pk_foul_df = self.df[foul_mask | fk_mask].copy()
-        error_index_list = []
-        for idx in fk_pk_foul_df.index:
-            while idx in self.df[foul_mask].index:
-                stop_loop = True
-                break
-            if stop_loop:
-                break
-            error_index_list.append(idx)
-        print('error',error_index_list)
-        fk_pk_foul_df.drop(error_index_list, inplace=True)
 
+        foul_index_list = list(self.df[foul_mask].index)
+        fk_pk_index_list = list(self.df[fk_mask].index)
+        fk_pk_foul_df_index_list = list(fk_pk_foul_df.index)
+        correct_pair_index_list = []
+
+        # checking if an index in fk_pk_foul_df is in foul_index and its next index is in fk_pk_index
+        # also checking fk-pk and foul for alternate teams
+        for idx in fk_pk_foul_df_index_list:
+            if idx in foul_index_list:
+                foul_index = fk_pk_foul_df_index_list.index(idx)
+                fk_pk_index_val = fk_pk_foul_df_index_list[foul_index + 1]
+                foul_teamm = self.df.at[idx, 'team']
+                if (fk_pk_index_val in fk_pk_index_list) and (self.df.at[fk_pk_index_val, 'team'] != foul_teamm):
+                    correct_pair_index_list.append(idx)
+                    correct_pair_index_list.append(fk_pk_index_val)
+
+        # removing pairs to get fk-pk or fouls without their pairs
+        for val in correct_pair_index_list:
+            fk_pk_foul_df_index_list.remove(val)
+
+        error_list = fk_pk_foul_df_index_list
+
+        return self.df.iloc[error_list]
 
     def fk_pk_foul_check(self):
         """
@@ -248,7 +269,7 @@ class QualityChecks:
 
         # verifying if the foul and fk-pk count match
         if (teamb_foul == teama_fk_pk) & (teama_foul == teamb_fk_pk):
-            pass
+            print('###foul_fk-pk qc done###')
         else:
             teamB = (teamb_foul == teama_fk_pk)
             teamA = (teama_foul == teamb_fk_pk)
@@ -262,17 +283,22 @@ class QualityChecks:
                 foul_team = ['B']
                 fk_pk_team = ['A']
 
-            self.fk_pk_foul_output(foul_team, fk_pk_team)
+            output_df = self.fk_pk_foul_output_df(foul_team, fk_pk_team)
+            message = 'Foul to fk-pk not equal\n'\
+                    f'Team A FK-PK = {teama_fk_pk}, Team B Fouls = {teamb_foul}\n'\
+                    f'Team B FK-PK = {teamb_fk_pk}, Team A Fouls = {teama_foul}'
+            self.display_output(output_df, message, 45, 'fk_pk_foul_check')
+
 
     def calling_func(self):
-        # self.non_def_foul()
-        # self.successful_def()
-        # self.corner_qc_1()
-        # self.corner_qc_2()
-        # self.gk_qc_1()
-        # self.gk_qc_2()
-        # self.penalty_qc()
-        # self.unsuccessful_interception()
+        self.non_def_foul()
+        self.successful_def()
+        self.corner_qc_1()
+        self.corner_qc_2()
+        self.gk_qc_1()
+        self.gk_qc_2()
+        self.penalty_qc()
+        self.unsuccessful_interception()
         self.fk_pk_foul_check()
 
 
