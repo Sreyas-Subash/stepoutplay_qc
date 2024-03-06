@@ -4,9 +4,11 @@
 # option to run one or multiple files
 # reading files automatically from google form google doc file
 # monitoring analyst performance through error count, 24 hr completion
-# validating error correction done
+# validating error correction by analysts after qc
 # automatically delete files after 1 week
 # match report
+# make match_renum_details.xlsx as monthwise
+# corner previous action check qc
 
 
 import sys
