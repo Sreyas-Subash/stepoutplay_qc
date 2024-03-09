@@ -52,7 +52,6 @@ if __name__ == "__main__":
     if initial_input.lower() == 'y':
         write_obj = Write(df, match_id)
         write_obj.calling_func()
-        print(df.to_string())
 
     else:
         print("Proceeding without running df to coded string")

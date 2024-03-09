@@ -1,6 +1,9 @@
 import os
 import time
 import numpy as np
+from openpyxl import load_workbook, Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.styles import PatternFill
 
 src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 parent_dir = os.path.abspath(os.path.join(src_dir, os.pardir))
@@ -9,14 +12,50 @@ os.chdir(parent_dir)
 
 class MatchReport:
 
+    path = r'match_report'
+    if not os.path.exists(path):
+        os.makedirs(path)
+
     def __init__(self, data, df):
         self.df = df
         self.data = data
         self.match_id = self.data['match_id']
         self.team_a_name = self.data['team_a_name']
         self.team_b_name = self.data['team_b_name']
-        self.match_report_path_xlsx = "../match_report/Match_ID_" + str(self.match_id) + "_Time_" \
+        self.match_report_path_xlsx = "match_report/Match_ID_" + str(self.match_id) + "_Time_" \
                                  + time.strftime("%H-%M-%S") + ".xlsx"
+
+    def write_match_report(self, final_shot_pass_df, sheet_name):
+        # writing the match report into an excel file
+        if os.path.exists(self.match_report_path_xlsx):
+            wb = load_workbook(self.match_report_path_xlsx)
+            ws = wb.create_sheet(sheet_name)
+
+        else:
+            wb = Workbook()
+            ws = wb.active
+            ws.title = f'{sheet_name}'
+
+        for r in dataframe_to_rows(final_shot_pass_df, index=False, header=True):
+            ws.append(r)
+
+        for cell in ws[1]:
+            cell.style = 'Pandas'
+
+        for col in ['A', 'B', 'C', 'D', 'E', 'F']:
+            ws.column_dimensions[col].width = 25
+
+        assist_goal_list = ['Through Pass Assist', 'Short Pass Assist', 'Long Pass Assist', 'Cross Assist',
+                            'Close Shot Goal', 'Long Shot Goal', 'Header Goal']
+
+        # coloring some cells based on a condition
+        for row_idx in range(2, final_shot_pass_df.shape[0] + 2):
+            action_taken_cell = ws.cell(row=row_idx, column=4)
+            if action_taken_cell.value in assist_goal_list:
+                action_taken_cell.fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+
+        wb.save(self.match_report_path_xlsx)
+        return True
 
     def reorder_col(self, shot_pass_df):
         # dropping and reordering columns
@@ -25,7 +64,8 @@ class MatchReport:
         desired_order = ['timestamp', 'jersey_number', 'special_attribute', 'action_taken', 'receiver', 'half']
 
         shot_pass_df = shot_pass_df[desired_order]
-        print(shot_pass_df.to_string())
+
+        return shot_pass_df
 
     def special_attribute(self, shot_pass_df):
         # creating special_attribute col
@@ -37,7 +77,7 @@ class MatchReport:
             'CN': 'Corner Kick'
         }
         shot_pass_df['special_attribute'] = shot_pass_df['special_attribute'].map(sp_att_dict)
-        self.reorder_col(shot_pass_df)
+        return self.reorder_col(shot_pass_df)
 
     def half_col(self, shot_pass_df):
         # creating 'half' col
@@ -53,7 +93,7 @@ class MatchReport:
             'PK': 'Penalty Shoot-Out'
         }
         shot_pass_df['half'] = shot_pass_df['half'].map(half_dict)
-        self.special_attribute(shot_pass_df)
+        return self.special_attribute(shot_pass_df)
 
     def action_taken_col(self, shot_pass_df):
         # creating 'action_taken' col
@@ -84,7 +124,7 @@ class MatchReport:
 
         shot_pass_df['action_taken'] = shot_pass_df[['action', 'notation']].apply(action_to_words, axis=1)
 
-        self.half_col(shot_pass_df)
+        return self.half_col(shot_pass_df)
 
 
     def receiver_col(self, shot_pass_df):
@@ -102,7 +142,7 @@ class MatchReport:
 
         shot_pass_df.drop(index_list, inplace=True)
 
-        self.action_taken_col(shot_pass_df)
+        return self.action_taken_col(shot_pass_df)
 
 
     def key_assist_shot_detail(self, team, team_name):
@@ -118,10 +158,17 @@ class MatchReport:
         shot_goal_mask = ((self.df['team'] == team) & (self.df['action'].isin(['CS', 'LS', 'H'])))
         shot_pass_df = self.df[key_assist_pass_mask | shot_goal_mask].copy()
 
-        self.receiver_col(shot_pass_df)
+        final_shot_pass_df = self.receiver_col(shot_pass_df)
+        sheet_name = team_name
+
+        bool = self.write_match_report(final_shot_pass_df, sheet_name)
+
+        if bool:
+            print(f"{team_name} match report created")
 
     def calling_func(self):
         self.key_assist_shot_detail('A', self.team_a_name)
+        self.key_assist_shot_detail('B', self.team_b_name)
 
 
 
