@@ -7,7 +7,11 @@ class AnalystDetails():
         self.analyst_names = {1: 'Sreyas',
                               2: 'Rahul',
                               3: 'Arpit',
-                              4: 'Rohit'
+                              4: 'Rohit',
+                              5: 'Shourjo',
+                              6: 'Ankit',
+                              7: 'Arvind',
+                              8: 'Vishal'
                               }
 
 if __name__ == "__main":

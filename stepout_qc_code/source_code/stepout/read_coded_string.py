@@ -40,8 +40,15 @@ class Read:
 
                     coded_string_list = coded_string.split(',')
                     df = pd.DataFrame(coded_string_list, columns=['strings'])
+                    new_df = df['strings'].str.split('-', expand=True)
+
+                    # checks if 2 rows stuck together without comma
+                    if new_df.columns.stop > 10:
+                        print('Seems like a comma is missing!')
+                        print(new_df[new_df[10].notna()].to_string())
+                        sys.exit(0)
                     df[['team', 'jersey_number', 'action', 'notation', 'start_grid', 'end_grid', 'timestamp', 'foot',
-                        'special_attribute', 'half']] = df['strings'].str.split('-', expand=True)
+                        'special_attribute', 'half']] = new_df
                     df = df.drop(columns=['strings'])
                     return df
 

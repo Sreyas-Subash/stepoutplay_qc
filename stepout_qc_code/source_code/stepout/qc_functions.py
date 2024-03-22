@@ -1,5 +1,7 @@
 import os
 import time
+
+import pandas as pd
 from openpyxl import load_workbook, Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import Font, Alignment
@@ -242,7 +244,7 @@ class QualityChecks:
 
         # checking if an index in fk_pk_foul_df is in foul_index and its next index is in fk_pk_index
         # also checking fk-pk and foul for alternate teams
-        for idx in fk_pk_foul_df_index_list:
+        for idx in fk_pk_foul_df_index_list[:-1]:
             if idx in foul_index_list:
                 foul_index = fk_pk_foul_df_index_list.index(idx)
                 fk_pk_index_val = fk_pk_foul_df_index_list[foul_index + 1]
@@ -289,6 +291,27 @@ class QualityChecks:
                     f'Team B FK-PK = {teamb_fk_pk}, Team A Fouls = {teama_foul}'
             self.display_output(output_df, message, 45, 'fk_pk_foul_check')
 
+    def receiver_not_same(self):
+        """
+        This function checks if the current and receiver action are done by the same player
+        :return: None
+        """
+        error_df = pd.DataFrame()
+        receiver_actions = ['ST','SL','IN','GD','AD','SP','LP','TB','C','DR','GT','THW']
+        for action in receiver_actions:
+            mask = self.df['action'].isin([action, f'X{action}'])
+            new_df = self.df[mask]
+
+            for tmstmp in new_df['timestamp'].unique():
+                if new_df[new_df['timestamp'] == tmstmp]['team'].count() == 1:
+                    continue
+                elif len(new_df[new_df['timestamp'] == tmstmp]['team'].unique()) == 1 and \
+                        len(new_df[new_df['timestamp'] == tmstmp]['jersey_number'].unique()) == 1:
+                    error_df = pd.concat([error_df, new_df[new_df['timestamp'] == tmstmp]])
+
+        message = 'These current and receiver actions are done by the same player. Check!'
+        self.display_output(error_df, message, 30, 'current_receiver_same', error_df.shape[0])
+
 
     def calling_func(self):
         self.non_def_foul()
@@ -300,6 +323,7 @@ class QualityChecks:
         self.penalty_qc()
         self.unsuccessful_interception()
         self.fk_pk_foul_check()
+        self.receiver_not_same()
 
 
 # if __name__ == "__main__":

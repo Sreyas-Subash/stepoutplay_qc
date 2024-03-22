@@ -8,11 +8,28 @@
 # automatically delete files after 1 week
 # make match_renum_details.xlsx as monthwise
 # corner previous action check qc
+# match id - 1759 match report bug
+# when no error, no output -> resolve with some output
+# check if both shn and fhn tagged
+# check for timestamp continuity
+
+# 1739 error - arvind - check specially
 
 
-import sys
-import traceback
-import docx
-import pandas as pd
-import os
+# import gspread
+# import pandas as pd
+#
+# data = [['manu', 10, 99], ['raj', 12, 65], ['nandu', 11, 88]]
+# df = pd.DataFrame(data, columns=['name', 'age', 'score'])
+#
+# gc = gspread.service_account(filename='D:\stepout\qc\creds.json')
+#
+# sh = gc.create('api_create')
+#
+# worksheet = sh.add_worksheet(title="A worksheet", rows=100, cols=20)
+#
+# worksheet.update([df.columns.values.tolist()] + df.values.tolist())
+#
+# sh.share('sreyassubash99@gmail.com', perm_type='user', role='writer')
+
 
