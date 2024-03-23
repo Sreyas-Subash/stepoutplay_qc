@@ -312,6 +312,26 @@ class QualityChecks:
         message = 'These current and receiver actions are done by the same player. Check!'
         self.display_output(error_df, message, 30, 'current_receiver_same', error_df.shape[0])
 
+    def current_next_action_not_same(self):
+        """
+        This function checks if the current action and next action are done by the same player
+        Only for SP, LP, TB, C
+        :return:
+        """
+        error_df = pd.DataFrame()
+        receiver_actions = ['XSP','XLP','XTB','XC']
+        mask = self.df['action'].isin(receiver_actions) & self.df['notation'] != 0
+        receiver_actions_index_list = self.df[mask].index.tolist()
+        for idx in receiver_actions_index_list:
+            if idx == self.df.index[-1]:
+                continue
+            elif (self.df.at[idx - 1,'team'] == self.df.at[idx  +1,'team']) and \
+                    (self.df.at[idx - 1, 'jersey_number'] == self.df.at[idx + 1, 'jersey_number']):
+                error_df = pd.concat([error_df, self.df.loc[[idx - 1, idx, idx + 1]]])
+
+        message = 'These current and next actions are done by the same player(3 rows are 1 error). Check!'
+        self.display_output(error_df, message, 30, 'current_next_same', error_df.shape[0])
+
 
     def calling_func(self):
         self.non_def_foul()
@@ -324,6 +344,7 @@ class QualityChecks:
         self.unsuccessful_interception()
         self.fk_pk_foul_check()
         self.receiver_not_same()
+        self.current_next_action_not_same()
 
 
 # if __name__ == "__main__":
