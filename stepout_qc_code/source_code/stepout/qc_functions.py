@@ -47,22 +47,23 @@ class QualityChecks:
         a1.font = Font(size=12, underline='single')
         a1.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
 
-        for row in dataframe_to_rows(df, index=False, header=True):
-            ws.append(row)
+        if df.shape[0] != 0:
+            for row in dataframe_to_rows(df, index=False, header=True):
+                ws.append(row)
 
-        for cell in ws[2]:
-            cell.style = 'Pandas'
+            for cell in ws[2]:
+                cell.style = 'Pandas'
 
-        for row in ws.iter_rows():
-            for cell in row:
-                if cell.value:
-                    max_cell = cell
+            for row in ws.iter_rows():
+                for cell in row:
+                    if cell.value:
+                        max_cell = cell
 
-        coordinate = coordinate_from_string(max_cell.coordinate)
-        max_col = coordinate[0]
-        max_row = coordinate[1]
+            coordinate = coordinate_from_string(max_cell.coordinate)
+            max_col = coordinate[0]
+            max_row = coordinate[1]
 
-        ws.move_range(f"A2:{max_col}{max_row}", rows=0, cols=1)
+            ws.move_range(f"A2:{max_col}{max_row}", rows=0, cols=1)
 
         ws.column_dimensions['A'].width = size
 
@@ -333,6 +334,26 @@ class QualityChecks:
         self.display_output(error_df, message, 30, 'current_next_same', error_df.shape[0])
 
 
+    def fhn_shn_absent(self):
+        half_list = self.df['half'].unique()
+        error_count = 0
+        message = ''
+        if ('FHN' not in half_list):
+            message = "Match completely tagged with SHN"
+            error_count = 1
+        elif ('SHN' not in half_list):
+            message = "Match completely tagged with FHN"
+            error_count = 1
+        error_df = pd.DataFrame()
+        self.display_output(error_df, message, 30, 'fhn_or_shn_absent', error_count)
+
+    def num_of_actions(self):
+        actions = self.df.shape[0]
+        message = f"Number of actions = {actions}"
+        error_df = pd.DataFrame()
+        self.display_output(error_df, message, 30, 'action_numbers')
+
+
     def calling_func(self):
         self.non_def_foul()
         self.successful_def()
@@ -345,6 +366,8 @@ class QualityChecks:
         self.fk_pk_foul_check()
         self.receiver_not_same()
         self.current_next_action_not_same()
+        self.fhn_shn_absent()
+        self.num_of_actions()
 
 
 # if __name__ == "__main__":

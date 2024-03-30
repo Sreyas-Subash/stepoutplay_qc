@@ -11,7 +11,8 @@ class AnalystDetails():
                               5: 'Shourjo',
                               6: 'Ankit',
                               7: 'Arvind',
-                              8: 'Vishal'
+                              8: 'Vishal',
+                              9: 'Gorripotu'
                               }
 
 if __name__ == "__main":
