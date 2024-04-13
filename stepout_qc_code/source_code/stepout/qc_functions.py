@@ -82,10 +82,10 @@ class QualityChecks:
     def non_def_foul(self):
         """
         This function checks if -
-        A non-defensive action(other than ST, SL, AD, GD, HB) was given a foul
+        A non-defensive action(other than ST, SL, AD, GD, HB, THW) was given a foul
         :return: None
         """
-        mask = ~(self.df['action'].isin(['ST', 'SL', 'AD', 'GD', 'HB'])) & (self.df['special_attribute'].isin(['F', 'YC', 'RC']))
+        mask = ~(self.df['action'].isin(['ST', 'SL', 'AD', 'GD', 'HB', 'THW'])) & (self.df['special_attribute'].isin(['F', 'YC', 'RC']))
         non_df_action = self.df[mask]
         non_df_action_count = non_df_action['action'].count()
         message = 'A non defensive action was tagged as a foul. Please check!'
@@ -97,7 +97,7 @@ class QualityChecks:
          A successful defensive action was tagged as a foul
         :return: None
         """
-        mask = (self.df['action'].isin(['ST', 'SL', 'AD', 'GD']))  & (self.df['notation'] == '1') & \
+        mask = (self.df['action'].isin(['ST', 'SL', 'AD', 'GD', 'THW']))  & (self.df['notation'] == '1') & \
                (self.df['special_attribute'].isin(['F', 'YC', 'RC']))
         successful_df_action = self.df[mask]
         successful_df_action_foul_count = successful_df_action['action'].count()
@@ -123,7 +123,7 @@ class QualityChecks:
         """
         # To check if any crosses starting from (1, 01, 71) are corners
         mask = (self.df['special_attribute'] != 'CN') \
-               & (self.df['start_grid'].isin(['1','01','02','11','61','71','72'])) \
+               & (self.df['start_grid'].isin(['1','01','71'])) \
                & (self.df['action'] == 'C')
         corner_in_cross = self.df[mask]
         corner_in_cross_count = corner_in_cross['action'].count()
@@ -180,25 +180,29 @@ class QualityChecks:
 
     def misbehaviour_foul_count(self):
         """
-        This function finds the misbehaviour foul counts
+        This function finds the misbehaviour foul counts + THW-0-F(Foul throws)
         :return:
         misbehaviour_foul_a : int -> misbehaviour foul count for team A
         misbehaviour_foul_b : int -> misbehaviour foul count for team B
         """
+        self.misbehaviour_foul_index = []
         misbehaviour_foul_a = 0
         misbehaviour_foul_b = 0
         # misbehaviour foul standard notation ST-0 with YC or RC
         mask_1 = (self.df['action'] == 'ST') & (self.df['notation'] == '0') & (self.df['special_attribute'].isin(['YC', 'RC']))
-        misbehaviour_foul_index_list = self.df[mask_1].index
+        mask_2 = (self.df['action'] == 'THW') & (self.df['notation'] == '0') & (self.df['special_attribute'].isin(['F']))
+        misbehaviour_foul_index_list = self.df[mask_1 | mask_2].index
 
         for index in misbehaviour_foul_index_list:
             # misbehaviour foul standard notation will not have XST
             # df.index[-1] to make sure index does not run out of range
-            mask_2 = (index == self.df.index[-1]) or (self.df.loc[index + 1, 'action'] != 'XST')
-            if (mask_2) & (self.df.loc[index, 'team'] == 'A'):
+            mask_3 = (index == self.df.index[-1]) or ((self.df.loc[index + 1, 'action'] != 'XST') & (self.df.loc[index + 1, 'action'] != 'XTHW'))
+            if (mask_3) & (self.df.loc[index, 'team'] == 'A'):
                 misbehaviour_foul_a += 1
-            elif (mask_2) & (self.df.loc[index, 'team'] == 'B'):
+                self.misbehaviour_foul_index.append(index)
+            elif (mask_3) & (self.df.loc[index, 'team'] == 'B'):
                 misbehaviour_foul_b += 1
+                self.misbehaviour_foul_index.append(index)
 
         return misbehaviour_foul_a, misbehaviour_foul_b
 
@@ -258,6 +262,8 @@ class QualityChecks:
         for val in correct_pair_index_list:
             fk_pk_foul_df_index_list.remove(val)
 
+        # removing misbehaviour fouls
+        fk_pk_foul_df_index_list = [x for x in fk_pk_foul_df_index_list if x not in self.misbehaviour_foul_index]
         error_list = fk_pk_foul_df_index_list
 
         return self.df.iloc[error_list]
