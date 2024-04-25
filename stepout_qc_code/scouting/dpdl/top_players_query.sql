@@ -1,0 +1,44 @@
+SELECT * FROM scouts.scouting_data;
+use scouts;
+
+select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,possession_retained_per_90,
+succ_interceptions_per_90,(ground_duels_per_90+Ariel_Duels_Per_90) as duels_per_90,
+succ_tackles_per_90,total_forward_passes_per_90,(short_passes_per_90+long_passes_per_90) as passes_per_90,through_balls_per_90,clearances from scouting_data
+where preferred_position_most_played='defensive midfielder' order by absolute_score desc ;
+
+select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,total_assists,succ_interceptions_per_90,possession_retained_per_90,
+progressive_passes_per_90,(short_passes_per_90+long_passes_per_90+through_balls_per_90+crosses_per_90) as passes_per_90,chances_created_per_90,attempts_on_target_per_90,chances_created_per_90
+successsful_ball_carry_per_90,through_balls_per_90,total_long_shot_on_target_per_90,long_passes_per_90 from scouting_data
+where preferred_position_most_played='central midfielder' order by absolute_score desc limit 10;
+
+select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,succ_interceptions_per_90,
+crucial_defensive_actions_per_90,succ_tackles_per_90,crosses_per_90,clearances,(ground_duels_per_90+ariel_duels_per_90) as duels_per_90,succ_tackles_per_90
+successsful_ball_carry_per_90,long_passes_per_90,short_passes_per_90,Total_Forward_Passes_Per_90,Progressive_passes_Per_90 from scouting_data
+where preferred_position_most_played in ('left side back','right side back') order by absolute_score desc limit 10;
+
+select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,
+(goals_from_close_shot+goals_from_long_shot+goals_from_headed_shot) as goals
+,total_assists,attempts_on_target_per_90,dribbles_completed_per_90,chances_created_per_90,Successful_Touches_in_final_third_per_90,
+Passes_completed_in_final_third_per_90,crosses_per_90,short_passes_per_90
+ from scouting_data
+where preferred_position_most_played in ('left winger','right winger') order by absolute_score desc limit 10;
+
+select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,
+(goals_from_close_shot+goals_from_long_shot+goals_from_headed_shot) as goals
+,total_assists,attempts_on_target_per_90,dribbles_completed_per_90,chances_created_per_90,Successful_Touches_in_final_third_per_90,Passes_completed_in_final_third_per_90													
+ from scouting_data
+where preferred_position_most_played in ('center forward','striker') order by absolute_score desc limit 5;
+
+select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,succ_interceptions_per_90,possession_retained_per_90,
+crucial_defensive_actions_per_90,clearances,(ground_duels_per_90+ariel_duels_per_90) as duels_per_90,succ_tackles_per_90,
+Progressive_passes_Per_90,(short_passes_per_90+long_passes_per_90+through_balls_per_90+Crosses_Per_90) as passes_per_90,total_headed_shots_on_target from scouting_data
+where preferred_position_most_played in ('center back') order by absolute_score desc limit 10;
+
+select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,(goals_from_close_shot+goals_from_long_shot+Goals_from_headed_shot) as goals,
+total_assists,progressive_passes_per_90,short_passes_per_90,attempts_on_target_per_90,chances_created_per_90,
+dribbles_completed_per_90,through_balls_per_90,total_long_shot_on_target_per_90,Total_Forward_Passes_Per_90 from scouting_data
+where preferred_position_most_played='attacking midfielder' order by absolute_score desc;
+
+	select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,Total_saves,goal_conceded,
+	goalkick_accuracy,goalkeeper_throws_completed,punches,handling,progressive_passes_per_90 from scouting_data
+	where preferred_position_most_played='goalkeeper' order by absolute_score desc limit 10 ;

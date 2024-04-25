@@ -11,7 +11,7 @@ class AnalystDetails():
                               5: 'Shourjo',
                               6: 'Ankit',
                               7: 'Arvind',
-                              8: 'Vishal',
+                              8: 'Hari',
                               9: 'Gorripotu'
                               }
 

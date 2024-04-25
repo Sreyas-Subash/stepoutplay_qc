@@ -243,6 +243,8 @@ class QualityChecks:
         fk_pk_foul_df = self.df[foul_mask | fk_mask].copy()
 
         foul_index_list = list(self.df[foul_mask].index)
+        foul_index_list = [x for x in foul_index_list if x not in self.misbehaviour_foul_index]
+
         fk_pk_index_list = list(self.df[fk_mask].index)
         fk_pk_foul_df_index_list = list(fk_pk_foul_df.index)
         correct_pair_index_list = []

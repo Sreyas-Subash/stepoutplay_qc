@@ -12,8 +12,9 @@
 # when no error, no output -> resolve with some output
 # check if both shn and fhn tagged
 # check for timestamp continuity
-
 # 1739 error - arvind - check specially
+
+# GD-0 and AD-0 check
 
 
 # import gspread
