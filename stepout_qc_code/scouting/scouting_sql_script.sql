@@ -12,8 +12,8 @@ successsful_ball_carry_per_90,through_balls_per_90,total_long_shot_on_target_per
 where preferred_position_most_played='central midfielder' order by absolute_score desc limit 10;
 
 select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,succ_interceptions_per_90,
-crucial_defensive_actions_per_90,succ_tackles_per_90,crosses_per_90,clearances,(ground_duels_per_90+ariel_duels_per_90) as duels_per_90,succ_tackles_per_90
-successsful_ball_carry_per_90,long_passes_per_90,short_passes_per_90,Total_Forward_Passes_Per_90,Progressive_passes_Per_90 from scouting_data
+crucial_defensive_actions_per_90,succ_tackles_per_90,crosses_per_90,clearances,(ground_duels_per_90+ariel_duels_per_90) as duels_per_90,succ_tackles_per_90,
+successful_ball_carry_per_90,long_passes_per_90,short_passes_per_90,Total_Forward_Passes_Per_90,Progressive_passes_Per_90 from scouting_data
 where preferred_position_most_played in ('left side back','right side back') order by absolute_score desc limit 10;
 
 select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,
@@ -39,6 +39,6 @@ total_assists,progressive_passes_per_90,short_passes_per_90,attempts_on_target_p
 dribbles_completed_per_90,through_balls_per_90,total_long_shot_on_target_per_90,Total_Forward_Passes_Per_90 from scouting_data
 where preferred_position_most_played='attacking midfielder' order by absolute_score desc;
 
-	select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,Total_saves,goal_conceded,
-	goalkick_accuracy,goalkeeper_throws_completed,punches,handling,progressive_passes_per_90 from scouting_data
-	where preferred_position_most_played='goalkeeper' order by absolute_score desc limit 10 ;
+select absolute_score,user_name,team_name,total_game_time,preferred_position_most_played,Total_saves,goal_conceded,
+goalkick_accuracy,goalkeeper_throws_completed,punches,handling,progressive_passes_per_90 from scouting_data
+where preferred_position_most_played='goalkeeper' order by absolute_score desc limit 10 ;
