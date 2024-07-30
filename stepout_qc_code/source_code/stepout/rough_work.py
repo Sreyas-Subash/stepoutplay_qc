@@ -15,6 +15,7 @@
 # 1739 error - arvind - check specially
 
 # GD-0 and AD-0 check
+# THW-1 showing in successful defensive actions
 
 
 # import gspread

@@ -1,0 +1,19 @@
+tournament id = 234
+
+tournament name = DPDL Mumbai U-13
+
+Finalist teams = Mumbai City FC A U13(team id = 1080)
+
+match ids for Mumbai City FC A U13  = 1413, 1491, 1557, 1583, 1660, 1707, 1735, 1796, 1812, 1869, 1907, 1987
+
+user ids for Mumbai City FC A U13 = 17291, 17292, 17293, 17294, 17295, 17296, 17297, 17298, 17299, 17300, 17301, 17302, 23801
+
+
+
+
+Finalist teams = Barca Academy Blau U13(team id = 1083)
+
+match ids for Barca Academy Blau U13  = 1416, 1587, 1611, 1661, 1722, 1869, 2046, 1474, 1482, 1614, 1658, 1705, 1912, 1980
+
+user ids for Barca Academy Blau U13 = 17458, 17459, 17460, 17461, 17462, 17463, 17464, 17465, 17466, 18653, 18654, 18655, 18656, 18657, 18658, 18659, 18660, 18661, 18662, 18663, 18664, 18665, 18666, 18667, 18668, 22382
+

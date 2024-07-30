@@ -1,0 +1,4 @@
+user_id,user_name,team_name,preferred_position,preferred_position_most_played,jersey_number,total_game_time,progressive_passes_per_90,goalkick_accuracy_per_90,successful_goalkeeper_throws_per_90,successful_handling_per_90,successful_punches_per_90,total_saves_completed_per_90
+18653,Aaradhya  Shastri,Barca Academy Blau U13,['GOALKEEPER'],GOALKEEPER,"['1', '01']",665,11.50375939849624,88.23529411764706,5.278195488721805,3.789473684210526,7.714285714285714,11.50375939849624
+17291,Livaan Akhil Mittal ,Mumbai City FC A U13,['GOALKEEPER'],GOALKEEPER,['24'],378,5.714285714285714,76.47058823529412,2.142857142857143,1.666666666666667,3.095238095238095,4.761904761904762
+17296,Avneesh Patil ,Mumbai City FC A U13,"['CENTER BACK', 'LEFT MIDFIELDER', 'GOALKEEPER', 'CENTRAL MIDFIELDER']",GOALKEEPER,['25'],452,3.783185840707965,97.67441860465115,2.190265486725664,0.995575221238938,4.380530973451328,5.376106194690266

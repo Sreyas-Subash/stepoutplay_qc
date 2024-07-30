@@ -1,0 +1,1 @@
+option = input("For single match qc, type 's'\nFor multipe match qc type 'm'\n")

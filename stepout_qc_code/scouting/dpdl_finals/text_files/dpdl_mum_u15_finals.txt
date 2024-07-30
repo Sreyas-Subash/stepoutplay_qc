@@ -1,0 +1,19 @@
+tournament id = 230
+
+tournament name = DPDL U15 Mumbai 2024
+
+Finalist teams = Mumbai City Fc B U-15(team id = 1074)
+
+match ids for Mumbai City Fc B U-15  = 1408, 1412, 1467, 1563, 2045, 1597, 1653, 1806
+
+user ids for Mumbai City Fc B U-15 = 17713, 17714, 17715, 17716, 17717, 17718, 17719, 17720, 17721, 17722, 17723, 17724, 17725, 17726, 17613
+
+
+
+
+Finalist teams = Mumbai City FC A U-15(team id = 1075)
+
+match ids for Mumbai City FC A U-15  = 1409, 1471, 1564, 1598, 1651, 1655, 1702, 1730, 1768, 1806, 1879, 2044
+
+user ids for Mumbai City FC A U-15 = 17606, 17607, 17608, 17609, 17610, 17611, 17612, 17613, 17614, 17616, 17617, 17618, 17619, 17615
+

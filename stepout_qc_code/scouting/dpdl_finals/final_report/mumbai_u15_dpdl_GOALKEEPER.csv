@@ -1,0 +1,5 @@
+user_id,user_name,team_name,preferred_position,preferred_position_most_played,jersey_number,total_game_time,progressive_passes_per_90,goalkick_accuracy_per_90,successful_goalkeeper_throws_per_90,successful_handling_per_90,successful_punches_per_90,total_saves_completed_per_90
+17616,Aaditya Pawan  Gupta,Mumbai City FC A U-15,"['GOALKEEPER', 'CENTRAL MIDFIELDER', 'RIGHT MIDFIELDER']",GOALKEEPER,['22'],535,8.411214953271028,100,2.186915887850467,2.691588785046729,1.850467289719626,4.542056074766355
+17713,Vedant Raghavendra Pujari,Mumbai City Fc B U-15,['GOALKEEPER'],GOALKEEPER,['1'],430,5.86046511627907,100,4.186046511627907,5.232558139534884,3.348837209302326,8.581395348837209
+17714,Sakash  Vukkadala,Mumbai City Fc B U-15,"['GOALKEEPER', 'RIGHT WINGER']",GOALKEEPER,"['01', '30', '5']",240,6.375,100,1.875,4.125,3.75,7.875
+17615,Tanishq Pandya,Mumbai City FC A U-15,"['GOALKEEPER', 'RIGHT WINGER']",GOALKEEPER,['21'],405,7.555555555555555,100,2.222222222222222,2.222222222222222,1.777777777777778,4.0

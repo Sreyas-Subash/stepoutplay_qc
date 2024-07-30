@@ -1,5 +1,6 @@
 import os
 import time
+from options import option
 
 import pandas as pd
 from openpyxl import load_workbook, Workbook
@@ -70,14 +71,18 @@ class QualityChecks:
         wb.save(self.qc_path_xlsx)
 
     def display_output(self, output_df, message, cell_size, sheet_name, wrong_data_count = 1):
-        if wrong_data_count != 0:
-            print('*' * star_count)
-            print(message)
-            print(output_df.to_string())
-            print('*' * star_count)
-            self.qc_excel_log(output_df, message, cell_size, sheet_name)
+        if option.lower() == 'm':
+            if wrong_data_count != 0:
+                self.qc_excel_log(output_df, message, cell_size, sheet_name)
         else:
-            print(f'###{sheet_name} qc done###')
+            if wrong_data_count != 0:
+                print('*' * star_count)
+                print(message)
+                print(output_df.to_string())
+                print('*' * star_count)
+                self.qc_excel_log(output_df, message, cell_size, sheet_name)
+            else:
+                print(f'###{sheet_name} qc done###')
 
     def non_def_foul(self):
         """
@@ -374,7 +379,8 @@ class QualityChecks:
         self.fk_pk_foul_check()
         self.receiver_not_same()
         self.current_next_action_not_same()
-        self.fhn_shn_absent()
+        if option.lower() != 'm':
+            self.fhn_shn_absent()
         self.num_of_actions()
 
 
