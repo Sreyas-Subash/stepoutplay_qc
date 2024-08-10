@@ -1,4 +1,5 @@
 import os
+import time
 from read_coded_string import Read
 from analyst_details import AnalystDetails
 from match_details import MatchDetails
@@ -18,8 +19,10 @@ if __name__ == "__main__":
 
     if options.option.lower() == 'm':
 
-        df_full = pd.read_csv("json_file/match_string_documents.csv")
+        df_full = pd.read_csv("json_file/nsw.csv")
         df_cleaned = df_full.dropna(subset=['match_string'])
+        qc_path_xlsx = "excel_logs/All_QC_Time_" + time.strftime("%H-%M-%S") + ".xlsx"
+        error_matches = {}
 
         for index, row in df_cleaned.iterrows():
             match_id = int(row['match_id'])
@@ -41,6 +44,7 @@ if __name__ == "__main__":
                 print('Seems like a comma is missing!')
                 print(f'match id = {match_id}')
                 print(new_df[new_df[10].notna()].to_string())
+                error_matches[match_id] = new_df[new_df.iloc[:, 10].notna()][6].to_list()
                 continue
 
             if new_df.shape[1] == 10:
@@ -53,8 +57,12 @@ if __name__ == "__main__":
             df = df.drop(columns=['strings'])
             df['special_attribute'] = df['special_attribute'].str.strip()
 
-            qc_obj = QualityChecks(df, match_id)
+            qc_obj = QualityChecks(df, match_id, qc_path_xlsx)
             qc_obj.calling_func()
+
+        error_matches_df = pd.DataFrame(list(error_matches.items()), columns=['match_id', 'string'])
+        if error_matches_df.shape[0] != 0:
+            error_matches_df.to_csv("json_file/error_matches_list.csv", index=False)
 
     else:
 

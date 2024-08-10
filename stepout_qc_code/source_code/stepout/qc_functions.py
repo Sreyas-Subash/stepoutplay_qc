@@ -8,22 +8,26 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils.cell import coordinate_from_string
 from package_necessity import star_count
+from openpyxl.styles import PatternFill
 
 src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 parent_dir = os.path.abspath(os.path.join(src_dir, os.pardir))
 os.chdir(parent_dir)
 
 class QualityChecks:
+    flag = True
     path = r'excel_logs'
     if not os.path.exists(path):
         os.makedirs(path)
 
-    def __init__(self, df, match_id):
+    def __init__(self, df, match_id, qc_path_xlsx):
         self.df = df
         self.match_id = match_id
-        self.qc_path_xlsx = "excel_logs/Match_ID_" + str(match_id) + "_Time_" + time.strftime("%H-%M-%S") + ".xlsx"
+        # self.qc_path_xlsx = "excel_logs/Match_ID_" + str(match_id) + "_Time_" + time.strftime("%H-%M-%S") + ".xlsx"
+        self.qc_path_xlsx = qc_path_xlsx
+        self.gd_ad_idx_list = []
 
-    def qc_excel_log(self, df, message, size, sheet_name):
+    def qc_excel_log(self, df, message):
         """
         Records all the errors to an excel file
         :param df: pd.DataFrame
@@ -33,26 +37,42 @@ class QualityChecks:
         :return: None
         """
 
-        if os.path.exists(self.qc_path_xlsx):
-            wb = load_workbook(self.qc_path_xlsx)
-            ws = wb.create_sheet(f'{sheet_name}')
+        # Create a PatternFill object for a solid red fill
+        red_fill = PatternFill(start_color="FFFF0000", end_color="FFFF0000", fill_type="solid")
 
-        else:
+        if not os.path.exists(self.qc_path_xlsx):
             wb = Workbook()
             ws = wb.active
-            ws.title = f'{sheet_name}'
+            ws.title = 'All_QC'
+            match_id_cell = ws.cell(row=1, column=1, value=f'match_id = {self.match_id}')
+            match_id_cell.fill = red_fill
+            self.flag = False
 
-        a1 = ws['A1']
-        a1.value = f'{message}'
+        else:
+            wb = load_workbook(self.qc_path_xlsx)
+            ws = wb['All_QC']
+            if self.flag:
+                match_id_cell = ws.cell(row=ws.max_row+2, column=1, value=f'match_id = {self.match_id}')
+                match_id_cell.fill = red_fill
+                m_id = self.match_id
+                self.flag = False
 
-        a1.font = Font(size=12, underline='single')
-        a1.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        # Find the max row in the existing sheet to append data
+        current_max_row = ws.max_row
+        # Write the message in the first cell
+        msg_cell = ws.cell(row=current_max_row+1, column=1, value=f'{message}')
+        msg_cell.font = Font(size=12, underline='single')
+        msg_cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        # Set the width of the first column
+        ws.column_dimensions['A'].width = 45
 
         if df.shape[0] != 0:
+            # Write the DataFrame to the sheet starting from the next empty row
             for row in dataframe_to_rows(df, index=False, header=True):
                 ws.append(row)
 
-            for cell in ws[2]:
+            # Apply styles to the new data
+            for cell in ws[current_max_row + 2]:
                 cell.style = 'Pandas'
 
             for row in ws.iter_rows():
@@ -64,23 +84,59 @@ class QualityChecks:
             max_col = coordinate[0]
             max_row = coordinate[1]
 
-            ws.move_range(f"A2:{max_col}{max_row}", rows=0, cols=1)
+            ws.move_range(f"A{current_max_row+2}:{max_col}{max_row}", rows=0, cols=1)
 
-        ws.column_dimensions['A'].width = size
-
+        # Save the workbook
         wb.save(self.qc_path_xlsx)
 
-    def display_output(self, output_df, message, cell_size, sheet_name, wrong_data_count = 1):
+        # if os.path.exists(self.qc_path_xlsx):
+        #     wb = load_workbook(self.qc_path_xlsx)
+        #     ws = wb.create_sheet(f'{sheet_name}')
+        #
+        # else:
+        #     wb = Workbook()
+        #     ws = wb.active
+        #     ws.title = f'{sheet_name}'
+        #
+        # a1 = ws['A1']
+        # a1.value = f'{message}'
+        #
+        # a1.font = Font(size=12, underline='single')
+        # a1.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        #
+        # if df.shape[0] != 0:
+        #     for row in dataframe_to_rows(df, index=False, header=True):
+        #         ws.append(row)
+        #
+        #     for cell in ws[2]:
+        #         cell.style = 'Pandas'
+        #
+        #     for row in ws.iter_rows():
+        #         for cell in row:
+        #             if cell.value:
+        #                 max_cell = cell
+        #
+        #     coordinate = coordinate_from_string(max_cell.coordinate)
+        #     max_col = coordinate[0]
+        #     max_row = coordinate[1]
+        #
+        #     ws.move_range(f"A2:{max_col}{max_row}", rows=0, cols=1)
+        #
+        # ws.column_dimensions['A'].width = size
+        #
+        # wb.save(self.qc_path_xlsx)
+
+    def display_output(self, output_df, message, sheet_name, wrong_data_count = 1):
         if option.lower() == 'm':
             if wrong_data_count != 0:
-                self.qc_excel_log(output_df, message, cell_size, sheet_name)
+                self.qc_excel_log(output_df, message)
         else:
             if wrong_data_count != 0:
                 print('*' * star_count)
                 print(message)
                 print(output_df.to_string())
                 print('*' * star_count)
-                self.qc_excel_log(output_df, message, cell_size, sheet_name)
+                self.qc_excel_log(output_df, message)
             else:
                 print(f'###{sheet_name} qc done###')
 
@@ -94,7 +150,7 @@ class QualityChecks:
         non_df_action = self.df[mask]
         non_df_action_count = non_df_action['action'].count()
         message = 'A non defensive action was tagged as a foul. Please check!'
-        self.display_output(non_df_action, message, 30, 'non_df_action_foul', non_df_action_count)
+        self.display_output(non_df_action, message, 'non_df_action_foul', non_df_action_count)
 
     def successful_def(self):
         """
@@ -107,7 +163,7 @@ class QualityChecks:
         successful_df_action = self.df[mask]
         successful_df_action_foul_count = successful_df_action['action'].count()
         message = 'A successful defensive action was tagged as a foul. Please check!'
-        self.display_output(successful_df_action, message, 30, 'successful_df_action_foul', successful_df_action_foul_count)
+        self.display_output(successful_df_action, message, 'successful_df_action_foul', successful_df_action_foul_count)
 
     def corner_qc_1(self):
         """
@@ -119,7 +175,7 @@ class QualityChecks:
         false_cn = self.df[mask]
         false_cn_count = false_cn['action'].count()
         message = 'This Corner started from a false start grid(not starting from [1, 01, 71]). Please check!'
-        self.display_output(false_cn, message, 40, 'corner_grid_check', false_cn_count)
+        self.display_output(false_cn, message, 'corner_grid_check', false_cn_count)
 
     def corner_qc_2(self):
         """
@@ -133,7 +189,7 @@ class QualityChecks:
         corner_in_cross = self.df[mask]
         corner_in_cross_count = corner_in_cross['action'].count()
         message = f'{corner_in_cross_count} cross found with corner grid. Check if they are corners'
-        self.display_output(corner_in_cross, message, 30, 'cross_check', corner_in_cross_count)
+        self.display_output(corner_in_cross, message, 'cross_check', corner_in_cross_count)
 
     def gk_qc_1(self):
         """
@@ -145,7 +201,7 @@ class QualityChecks:
         wrong_goalkick = self.df[mask]
         wrong_goalkick_count = wrong_goalkick['action'].count()
         message = 'GK QC-1\nThis goal kick is taken outside the goal area. Please check!'
-        self.display_output(wrong_goalkick, message, 30, 'GK QC-1', wrong_goalkick_count)
+        self.display_output(wrong_goalkick, message, 'GK QC-1', wrong_goalkick_count)
 
     def gk_qc_2(self):
         """
@@ -158,7 +214,7 @@ class QualityChecks:
         wrong_goalkeeper = self.df[mask]
         wrong_goalkeeper_count = wrong_goalkeeper['action'].count()
         message = 'GK QC-2\nThis GH or GT taken outside penalty area. Please check!'
-        self.display_output(wrong_goalkeeper, message, 30, 'GK QC-2', wrong_goalkeeper_count)
+        self.display_output(wrong_goalkeeper, message, 'GK QC-2', wrong_goalkeeper_count)
 
     def penalty_qc(self):
         """
@@ -169,7 +225,7 @@ class QualityChecks:
         wrong_pk = self.df[mask]
         wrong_pk_count = wrong_pk['action'].count()
         message = 'This penalty kick is taken outside the penalty area(32, 42). Please check!'
-        self.display_output(wrong_pk, message, 30, 'Penalty_check', wrong_pk_count)
+        self.display_output(wrong_pk, message, 'Penalty_check', wrong_pk_count)
 
     def unsuccessful_interception(self):
         """
@@ -181,7 +237,7 @@ class QualityChecks:
         unsuccessful_interception = self.df[mask]
         unsuccessful_interception_count = unsuccessful_interception['action'].count()
         message = 'An unsuccessful interception was tagged. Please check!'
-        self.display_output(unsuccessful_interception, message, 30, 'unsuccessful_interception_check', unsuccessful_interception_count)
+        self.display_output(unsuccessful_interception, message, 'unsuccessful_interception_check', unsuccessful_interception_count)
 
     def misbehaviour_foul_count(self):
         """
@@ -285,7 +341,8 @@ class QualityChecks:
 
         # verifying if the foul and fk-pk count match
         if (teamb_foul == teama_fk_pk) & (teama_foul == teamb_fk_pk):
-            print('###foul_fk-pk qc done###')
+            # print('###foul_fk-pk qc done###')
+            pass
         else:
             teamB = (teamb_foul == teama_fk_pk)
             teamA = (teama_foul == teamb_fk_pk)
@@ -303,7 +360,7 @@ class QualityChecks:
             message = 'Foul to fk-pk not equal\n'\
                     f'Team A FK-PK = {teama_fk_pk}, Team B Fouls = {teamb_foul}\n'\
                     f'Team B FK-PK = {teamb_fk_pk}, Team A Fouls = {teama_foul}'
-            self.display_output(output_df, message, 45, 'fk_pk_foul_check')
+            self.display_output(output_df, message, 'fk_pk_foul_check')
 
     def receiver_not_same(self):
         """
@@ -324,7 +381,7 @@ class QualityChecks:
                     error_df = pd.concat([error_df, new_df[new_df['timestamp'] == tmstmp]])
 
         message = 'These current and receiver actions are done by the same player. Check!'
-        self.display_output(error_df, message, 30, 'current_receiver_same', error_df.shape[0])
+        self.display_output(error_df, message, 'current_receiver_same', error_df.shape[0])
 
     def current_next_action_not_same(self):
         """
@@ -344,7 +401,7 @@ class QualityChecks:
                 error_df = pd.concat([error_df, self.df.loc[[idx - 1, idx, idx + 1]]])
 
         message = 'These current and next actions are done by the same player(3 rows are 1 error). Check!'
-        self.display_output(error_df, message, 30, 'current_next_same', error_df.shape[0])
+        self.display_output(error_df, message, 'current_next_same', error_df.shape[0])
 
 
     def fhn_shn_absent(self):
@@ -358,13 +415,51 @@ class QualityChecks:
             message = "Match completely tagged with FHN"
             error_count = 1
         error_df = pd.DataFrame()
-        self.display_output(error_df, message, 30, 'fhn_or_shn_absent', error_count)
+        self.display_output(error_df, message, 'fhn_or_shn_absent', error_count)
 
     def num_of_actions(self):
         actions = self.df.shape[0]
         message = f"Number of actions = {actions}"
         error_df = pd.DataFrame()
-        self.display_output(error_df, message, 30, 'action_numbers')
+        self.display_output(error_df, message, 'action_numbers')
+
+    def gd_ad_idx_list_func(self, gd_ad_df):
+        # finding unsuccessful AD and GD, then appending the index of last 2 rows to be corrected
+        if '1' not in gd_ad_df['notation'].unique():
+            for i in gd_ad_df.iloc[[-2,-1]].index:
+                self.gd_ad_idx_list.append(i)
+
+    def gd_ad_correction(self):
+        """
+        This function writes GD-0 and XGD-0 into GD-1 and XGD-1(likewise for AD) when an unsuccessful GD or AD
+        takes place
+        :param df: pd.DataFrame -> df to be corrected
+        :return: None
+        """
+        for filter in [['GD', 'XGD'], ['AD', 'XAD']]:
+            # finding unique timestamp of all AD and GD
+            tmsp_list = self.df[(self.df['action'].isin(filter))]['timestamp'].unique()
+
+            for tmsp in tmsp_list:
+                # creating a 4 row df for each GD and AD
+                gd_ad_df = self.df[(self.df['action'].isin(filter)) & (self.df['timestamp'] == tmsp)]
+                row_count = gd_ad_df['action'].count()
+                # if more than one GD or AD takes place at the same timestamp, it becomes a df of more than 4 rows
+                if row_count > 4:
+                    # making them separate dfs of 4 rows
+                    divs = int(row_count / 4)
+                    i = 1
+                    while i <= divs:
+                        gd_ad_dff = gd_ad_df.iloc[4 * (i - 1): 4 * i]
+                        i += 1
+                        self.gd_ad_idx_list_func(gd_ad_dff)
+                else:
+                    self.gd_ad_idx_list_func(gd_ad_df)
+
+        error_df = self.df.iloc[self.gd_ad_idx_list]
+        message = 'The receiver actions of these unsuccessful AD or GD are not correct(2 rows -> 1 error). Check!'
+        self.display_output(error_df, message, 'GD_AD_wrong', error_df.shape[0])
+
 
 
     def calling_func(self):
@@ -378,10 +473,10 @@ class QualityChecks:
         self.unsuccessful_interception()
         self.fk_pk_foul_check()
         self.receiver_not_same()
-        self.current_next_action_not_same()
-        if option.lower() != 'm':
-            self.fhn_shn_absent()
-        self.num_of_actions()
+        # self.current_next_action_not_same()
+        self.gd_ad_correction()
+        self.fhn_shn_absent()
+        # self.num_of_actions()
 
 
 # if __name__ == "__main__":
